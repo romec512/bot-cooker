@@ -33,7 +33,7 @@ namespace Bot_Application1.Dialogs
             }
             Regex reg = new Regex(@"http://www.povarenok.ru/recipes/show/[0-9]+/");
             Regex article = new Regex(@"/[0-9]+/");
-            Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(]+</td>");
+            Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+</td>");
             Regex NameRecieptReg = new Regex(@"<a href=""http://www.povarenok.ru/recipes/show/[0-9]+/"">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+</a>");
             Match art;
             //foreach (Match match in reg.Matches(str))
@@ -60,11 +60,10 @@ namespace Bot_Application1.Dialogs
                 //ничего умнее не придумал, увы :/
             {
                 string point = match.ToString();
-                point = Regex.Match(point, @">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(]+<").ToString();
-                point = Regex.Match(point, @"[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(]+").ToString();
+                point = Regex.Match(point, @">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+<").ToString();
+                point = Regex.Match(point, @"[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+").ToString();
                 await context.PostAsync(point);
             }
-            //await context.PostAsync(reciept.Match(str).ToString());
             context.Wait(MessageReceivedAsync);
         }
     }
