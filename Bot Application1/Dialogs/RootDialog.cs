@@ -33,8 +33,8 @@ namespace Bot_Application1.Dialogs
             }
             Regex reg = new Regex(@"http://www.povarenok.ru/recipes/show/[0-9]+/");
             Regex article = new Regex(@"/[0-9]+/");
-            Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+</td>");
-            Regex NameRecieptReg = new Regex(@"<a href=""http://www.povarenok.ru/recipes/show/[0-9]+/"">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+</a>");
+            Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
+            Regex NameRecieptReg = new Regex(@"<a href=""http://www.povarenok.ru/recipes/show/[0-9]+/"">[^\>\<]+</a>");
             Match art;
             //foreach (Match match in reg.Matches(str))
             //{
@@ -49,19 +49,19 @@ namespace Bot_Application1.Dialogs
                  resp.GetResponseStream(), Encoding.GetEncoding(1251)))
             {
                 str = stream.ReadToEnd();
-            }
+           }
             str = str.Replace("&quot;", "\"");
             string NameReciept = NameRecieptReg.Match(str).ToString();
-            NameReciept = Regex.Match(NameReciept, @">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+<").ToString();
-            NameReciept = Regex.Match(NameReciept, @"[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+").ToString();
+            NameReciept = Regex.Match(NameReciept, @">[^\>\<]+<").ToString();
+            NameReciept = Regex.Match(NameReciept, @"[^\>\<]+").ToString();
             await context.PostAsync(NameReciept);
             foreach (Match match in reciept.Matches(str))//парсим ответ с принт странички на сам рецепт.
                 //сначала находим по нужному тегу, дальше откидываем тег, далее откидываем знаки > <
                 //ничего умнее не придумал, увы :/
             {
                 string point = match.ToString();
-                point = Regex.Match(point, @">[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+<").ToString();
-                point = Regex.Match(point, @"[a-zA-Zа-яА-Я\s\-\.\,\!\?\)\(""]+").ToString();
+                point = Regex.Match(point, @">[^\>\<]+<").ToString();
+                point = Regex.Match(point, @"[^\>\<]+").ToString();
                 await context.PostAsync(point);
             }
             context.Wait(MessageReceivedAsync);
