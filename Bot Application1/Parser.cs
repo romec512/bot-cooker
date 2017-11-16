@@ -43,15 +43,23 @@ namespace Bot_Application1
             return str;
         }
 
-        public static string[,] ParseListReciepts(string reciept, Activity message)//метод для парсинга странички с 10 рецептами
+        public static string[,] ParseListReciepts(string reciept, IMessageActivity message)//метод для парсинга странички с 10 рецептами
         {
             string site = "http://www.povarenok.ru/recipes/search/?name=";
-            Regex reg = new Regex(@"<a href=""http://www.povarenok.ru/recipes/show/[\d]+/"" title=""посмотреть рецепт [^>]+"">[^<]+</a>");
-            Regex reg1 = new Regex(@">[^<]+<");
-            Regex NameOfRec = new Regex(@"[^<]");
+            Regex reg = new Regex(@"<a href=""http://www.povarenok.ru/recipes/show/[\d]+/"" title=""посмотреть рецепт [^\>]+"">[^\<]+</a>");
+            Regex reg1 = new Regex(@">[^\<]+<");
+            Regex link = new Regex(@"http://www.povarenok.ru/recipes/show/[\d]+/");
+            Regex NameOfRec = new Regex(@"[^\>\<]+");
             string page = GetPage(site, message);
-            //....
-            string[,] result = new string[2,10];//массив с результатами парсинга, в 0 строке названия рецептов, в 1 строке ссылки на рецепт
+            int i = 0;
+            page = page.Replace("&quot;", "\"");
+            string[,] result = new string[2, 10];//массив с результатами парсинга, в 0 строке названия рецептов, в 1 строке ссылки на рецепт
+            foreach (Match match in reg.Matches(page))
+            {
+                result[0, i] = i + 1 + ")"+NameOfRec.Match(reg1.Match(match.ToString()).ToString()).ToString();
+                result[1, i] = link.Match(match.ToString()).ToString();
+                i++;
+            }
             return result;
         }
 
@@ -79,9 +87,23 @@ namespace Bot_Application1
 
         //}
 
-        //public static string ParseIngredient(string site)//метод для парсинга странички с рецептом(для нахождения игредиентов)
-        //{
-
-        //}
+        public static string ParseIngredient(string site)//метод для парсинга странички с рецептом(для нахождения игредиентов)
+        {
+            Regex reg = new Regex(@"<li class=""cat"">[^\>\<]+</li>");
+            Regex reg1 = new Regex(@">[^\>\<]+<");
+            Regex reg2 = new Regex(@"[^\>\<]+");
+            site = site.Replace("show", "print");
+            string page = GetPage(site);
+            page = page.Replace("&quot;", "\"");
+            page = page.Replace("&mdash;", "-");
+            page = page.Replace("\t", "");
+            page = page.Replace("\n", "");
+            string result = "";
+            foreach(Match match in  reg.Matches(page))
+            {
+                result += reg2.Match(reg1.Match(match.ToString()).ToString()).ToString() + '\n';
+            }
+            return result;
+        }
     }
 }
