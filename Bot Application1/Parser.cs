@@ -13,7 +13,7 @@ namespace Bot_Application1
 {
     public class Parser
     { 
-        private static string GetPage(string site, Activity message)
+        public static string GetPage(string site, IMessageActivity message)
         {
 
             var str = HttpUtility.UrlEncode(message.Text, Encoding.GetEncoding(1251));
@@ -57,17 +57,31 @@ namespace Bot_Application1
 
         public static string ParseReciept(string site)//метод для парсинга странички с рецептом, site - ссылка на нужную страничку
         {
-           
+            Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
+            string str = Parser.GetPage(site);
+            str = str.Replace("&quot;", "\"");
+            string result = "";
+            foreach (Match match in reciept.Matches(str))//парсим ответ с принт странички на сам рецепт.
+                                                         //сначала находим по нужному тегу, дальше откидываем тег, далее откидываем знаки > <
+                                                         //ничего умнее не придумал, увы :/
+            {
+
+                string point = match.ToString();
+                point = Regex.Match(point, @">[^\>\<]+<").ToString();
+                point = Regex.Match(point, @"[^\>\<]+").ToString();
+                result = result + point + "\n";
+            }
+            return result;
         }
 
-        public static string ParseNameReciept(string site)//метод для парсинка странички с рецептом(для нахождения названия рецепта)
-        {
+        //public static string ParseNameReciept(string site)//метод для парсинка странички с рецептом(для нахождения названия рецепта)
+        //{
 
-        }
+        //}
 
-        public static string ParseIngredient(string site)//метод для парсинга странички с рецептом(для нахождения игредиентов)
-        {
+        //public static string ParseIngredient(string site)//метод для парсинга странички с рецептом(для нахождения игредиентов)
+        //{
 
-        }
+        //}
     }
 }
