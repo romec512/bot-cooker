@@ -6,7 +6,7 @@ using System.Linq;
 using System.Web.Http;
 using System.Net.Http;
 
-namespace Bot_Application4.Dialogs
+namespace Bot_Application1.Dialogs
 {
     [Serializable]
     public class RootDialog : IDialog<object>
