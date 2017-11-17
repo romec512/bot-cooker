@@ -68,6 +68,7 @@ namespace Bot_Application1
             Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
             string str = Parser.GetPage(site);
             str = str.Replace("&quot;", "\"");
+            str = str.Replace("<br />", "");
             string result = "";
             foreach (Match match in reciept.Matches(str))//парсим ответ с принт странички на сам рецепт.
                                                          //сначала находим по нужному тегу, дальше откидываем тег, далее откидываем знаки > <

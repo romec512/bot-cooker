@@ -11,6 +11,7 @@ namespace Bot_Application1.Dialogs
     [Serializable]
     public class RootDialog : IDialog<object>
     {
+        private string[,] res = new string[2, 10];
         public Task StartAsync(IDialogContext context)
         {
             context.Wait(MessageReceivedAsync);
@@ -31,6 +32,11 @@ namespace Bot_Application1.Dialogs
             if (activity.Text != "Старт" && activity.Text != "Help")
             {
                 //вывод списка из 10 названий
+                res = Parser.ParseListReciepts(activity.Text, activity);
+                for(int i=0; i< 10; i++)
+                {
+                    await context.PostAsync(res[0, i]);
+                }
                 await context.PostAsync($"Введите номер рецепта");
             }
             context.Wait(Ask1);
@@ -65,82 +71,90 @@ namespace Bot_Application1.Dialogs
         private async Task Ask1(IDialogContext context, IAwaitable<object> result)
         {
             var activity = await result as Activity;
-            switch (activity.Text)
-            {
-                case "1":
-                    await context.PostAsync($"Французский салат. Продукты (на 8 порций) Яблоки - 2 шт. Морковь свежая - 2 шт. Яйца куриные - 4 шт. Сыр твердый - 100-150 г Лук репчатый (по желанию) - 1 шт.айонез - по вкусу (100 г)");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "2":
-                    await context.PostAsync($"Селёдка под шубой. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "3":
-                    await context.PostAsync($"Суп с говядиной. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "4":
-                    await context.PostAsync($"Запеканка. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "5":
-                    await context.PostAsync($"Компот из сухофруктов. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "6":
-                    await context.PostAsync($"Плов по-узбекски. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "7":
-                    await context.PostAsync($"Макароны по-флотски. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "8":
-                    await context.PostAsync($"Рис с мясом. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "9":
-                    await context.PostAsync($"Очпочмак. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "10":
-                    await context.PostAsync($"Мантый. ");
-                    await context.PostAsync($"Способ приготовления...");
-                    await context.PostAsync($"Вам понравился рецепт?");
-                    context.Wait(Ask2);
-                    break;
-                case "Help":
-                    await context.PostAsync($"HELP");
-                    context.Wait(Ask1);
-                    break;
-                case "Старт":
-                    await context.PostAsync($"Введите ингридиенты...");
-                    context.Wait(Start1);
-                    break;
-                default:
-                    await context.PostAsync($"Ошибка. Вы ввели неправильно!");
-                    await context.PostAsync($"Введите номер рецепта или введите Старт что бы начать заново");
-                    context.Wait(Ask1);
-                    break;
-            }
+            int i = Convert.ToInt32(activity.Text) - 1;
+            await context.PostAsync(res[0, i]);
+            string reciept = Parser.ParseReciept(res[1, i]);
+            string ingr = Parser.ParseIngredient(res[1, i]);
+            await context.PostAsync(ingr);
+            await context.PostAsync(reciept);
+            await context.PostAsync("Вам понравился рецепт?");
+            context.Wait(Ask2);
+            //switch (activity.Text)
+            //{
+            //    case "1":
+            //        await context.PostAsync($"Французский салат. Продукты (на 8 порций) Яблоки - 2 шт. Морковь свежая - 2 шт. Яйца куриные - 4 шт. Сыр твердый - 100-150 г Лук репчатый (по желанию) - 1 шт.айонез - по вкусу (100 г)");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "2":
+            //        await context.PostAsync($"Селёдка под шубой. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "3":
+            //        await context.PostAsync($"Суп с говядиной. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "4":
+            //        await context.PostAsync($"Запеканка. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "5":
+            //        await context.PostAsync($"Компот из сухофруктов. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "6":
+            //        await context.PostAsync($"Плов по-узбекски. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "7":
+            //        await context.PostAsync($"Макароны по-флотски. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "8":
+            //        await context.PostAsync($"Рис с мясом. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "9":
+            //        await context.PostAsync($"Очпочмак. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "10":
+            //        await context.PostAsync($"Мантый. ");
+            //        await context.PostAsync($"Способ приготовления...");
+            //        await context.PostAsync($"Вам понравился рецепт?");
+            //        context.Wait(Ask2);
+            //        break;
+            //    case "Help":
+            //        await context.PostAsync($"HELP");
+            //        context.Wait(Ask1);
+            //        break;
+            //    case "Старт":
+            //        await context.PostAsync($"Введите ингридиенты...");
+            //        context.Wait(Start1);
+            //        break;
+            //    default:
+            //        await context.PostAsync($"Ошибка. Вы ввели неправильно!");
+            //        await context.PostAsync($"Введите номер рецепта или введите Старт что бы начать заново");
+            //        context.Wait(Ask1);
+            //        break;
+            //}
         }
         private async Task Ask2(IDialogContext context, IAwaitable<object> result)
         {
@@ -155,6 +169,11 @@ namespace Bot_Application1.Dialogs
                     await context.PostAsync($"Выберите один из оставшихся");
                     context.Wait(Ask1);
                     break;
+                case "Хз":
+                    await context.PostAsync($"Ну как хз то?");
+                    context.Wait(Ask1);
+                    break;
+                    
             }
         }
         private async Task Hop(IDialogContext context, IAwaitable<object> result)
