@@ -63,13 +63,13 @@ namespace Bot_Application1
             return result;
         }
 
-        public static string ParseReciept(string site)//метод для парсинга странички с рецептом, site - ссылка на нужную страничку
+        public static List<string> ParseReciept(string site)//метод для парсинга странички с рецептом, site - ссылка на нужную страничку
         {
             Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
             string str = Parser.GetPage(site);
             str = str.Replace("&quot;", "\"");
             str = str.Replace("<br />", "");
-            string result = "";
+            List<string> result = new List<string>();
             foreach (Match match in reciept.Matches(str))//парсим ответ с принт странички на сам рецепт.
                                                          //сначала находим по нужному тегу, дальше откидываем тег, далее откидываем знаки > <
                                                          //ничего умнее не придумал, увы :/
@@ -78,15 +78,19 @@ namespace Bot_Application1
                 string point = match.ToString();
                 point = Regex.Match(point, @">[^\>\<]+<").ToString();
                 point = Regex.Match(point, @"[^\>\<]+").ToString();
-                result = result + point + "\n";
+                result.Add(point);
             }
             return result;
         }
 
-        //public static string ParseNameReciept(string site)//метод для парсинка странички с рецептом(для нахождения названия рецепта)
-        //{
-
-        //}
+        public static string ParseTime(string site)//метод для парсинка времени приготовления
+        {
+            Regex time = new Regex(@"itemprop=""totalTime"">[^<]+</time>");
+            string page = Parser.GetPage(site);
+            string result = Regex.Match(time.Match(page).ToString(), @">[^<]+<").ToString();
+            result ="Время приготовления:" + Regex.Match(result, @"[^<>]+").ToString();
+            return result;
+        }
 
         public static string ParseIngredient(string site)//метод для парсинга странички с рецептом(для нахождения игредиентов)
         {
