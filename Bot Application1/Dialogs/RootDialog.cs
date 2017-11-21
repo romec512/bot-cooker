@@ -5,190 +5,223 @@ using Microsoft.Bot.Connector;
 using System.Linq;
 using System.Web.Http;
 using System.Net.Http;
+using System.Threading;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using AdaptiveCards;
 
 namespace Bot_Application1.Dialogs
 {
     [Serializable]
     public class RootDialog : IDialog<object>
     {
-        private string[,] res = new string[2, 10];
+        private string[,] res;
+        private int kek;
+        private int j = 0;
+        private List<string> reciepts;
         public Task StartAsync(IDialogContext context)
         {
             context.Wait(MessageReceivedAsync);
+
             return Task.CompletedTask;
         }
-        private async Task Start1(IDialogContext context, IAwaitable<object> result)
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)//нажатие на кнопку start в telegram
         {
-            var activity = await result as Activity;
-            if (activity.Text == "Help")
+            var message = await argument;
+            if(message.Text.ToLower() == "старт")
             {
-                await context.PostAsync($"HELP1");// сообщение о помощи
+                await context.PostAsync("Введите ингредиенты или название блюда.");
+                context.Wait(Poisk);
             }
-            if (activity.Text == "Старт")
+            else if(message.Text.ToLower() == "помощь")
             {
-                await context.PostAsync($"Введите ингридиенты...");
-                context.Wait(Ask1);
-            }
-            if (activity.Text != "Старт" && activity.Text != "Help")
-            {
-                //вывод списка из 10 названий
-                res = Parser.ParseListReciepts(activity.Text, activity);
-                for(int i=0; i< 10; i++)
-                {
-                    await context.PostAsync(res[0, i]);
-                }
-                await context.PostAsync($"Введите номер рецепта");
-            }
-            context.Wait(Ask1);
-        }
-        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<object> result)
-        {
-
-            var activity = await result as Activity;
-            if (activity.Text == "start")
-            {
-                await context.PostAsync($"Здравствуйте! " +
-                      $"Я Бот Кулинар, ваш помощник по приготовлению блюда. Я могу предложить вам рецепты. Напишите Старт что бы начать");
-                context.Wait(Start1);
-            }
-            if (activity.Text == "Help")
-            {
-                await context.PostAsync($"HELP");// сообщение о помощи
-            }
-            if (activity.Text == "Старт")
-            {
-
-                await context.PostAsync($"Введите ингридиенты...");
-                context.Wait(Start1);
-
-            }
-            if (activity.Text != "Старт" && activity.Text != "Help" && activity.Text != "start")
-            {
-                await context.PostAsync($"Я не знаю такой команды");
+                await context.PostAsync("Введите \"Старт\", чтобы начать, далее следуйте инструкциям! Удачного пользования!");
                 context.Wait(MessageReceivedAsync);
             }
-        }
-        private async Task Ask1(IDialogContext context, IAwaitable<object> result)
-        {
-            var activity = await result as Activity;
-            int i = Convert.ToInt32(activity.Text) - 1;
-            await context.PostAsync(res[0, i]);
-            string reciept = Parser.ParseReciept(res[1, i]);
-            string ingr = Parser.ParseIngredient(res[1, i]);
-            await context.PostAsync(ingr);
-            await context.PostAsync(reciept);
-            await context.PostAsync("Вам понравился рецепт?");
-            context.Wait(Ask2);
-            //switch (activity.Text)
-            //{
-            //    case "1":
-            //        await context.PostAsync($"Французский салат. Продукты (на 8 порций) Яблоки - 2 шт. Морковь свежая - 2 шт. Яйца куриные - 4 шт. Сыр твердый - 100-150 г Лук репчатый (по желанию) - 1 шт.айонез - по вкусу (100 г)");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "2":
-            //        await context.PostAsync($"Селёдка под шубой. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "3":
-            //        await context.PostAsync($"Суп с говядиной. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "4":
-            //        await context.PostAsync($"Запеканка. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "5":
-            //        await context.PostAsync($"Компот из сухофруктов. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "6":
-            //        await context.PostAsync($"Плов по-узбекски. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "7":
-            //        await context.PostAsync($"Макароны по-флотски. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "8":
-            //        await context.PostAsync($"Рис с мясом. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "9":
-            //        await context.PostAsync($"Очпочмак. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "10":
-            //        await context.PostAsync($"Мантый. ");
-            //        await context.PostAsync($"Способ приготовления...");
-            //        await context.PostAsync($"Вам понравился рецепт?");
-            //        context.Wait(Ask2);
-            //        break;
-            //    case "Help":
-            //        await context.PostAsync($"HELP");
-            //        context.Wait(Ask1);
-            //        break;
-            //    case "Старт":
-            //        await context.PostAsync($"Введите ингридиенты...");
-            //        context.Wait(Start1);
-            //        break;
-            //    default:
-            //        await context.PostAsync($"Ошибка. Вы ввели неправильно!");
-            //        await context.PostAsync($"Введите номер рецепта или введите Старт что бы начать заново");
-            //        context.Wait(Ask1);
-            //        break;
-            //}
-        }
-        private async Task Ask2(IDialogContext context, IAwaitable<object> result)
-        {
-            var activity = await result as Activity;
-            switch (activity.Text)
+            else if(message.Text.ToLower() == "/start")
             {
-                case "Да":
-                    await context.PostAsync($"Вы можете ввести Старт что бы найти что-то ещё");
-                    context.Wait(Hop);
-                    break;
-                case "Нет":
-                    await context.PostAsync($"Выберите один из оставшихся");
-                    context.Wait(Ask1);
-                    break;
-                case "Хз":
-                    await context.PostAsync($"Ну как хз то?");
-                    context.Wait(Ask1);
-                    break;
-                    
-            }
-        }
-        private async Task Hop(IDialogContext context, IAwaitable<object> result)
-        {
-            var activity = await result as Activity;
-            if (activity.Text == "Старт")
-            {
-                await context.PostAsync($"Введите ингридиенты...");
-                context.Wait(Start1);
+                await context.PostAsync("Вас приветствует бот-кулинар! Введите \"старт\" для начала, а далее следуйте инструкциям! Вы всегда можете начать заново, введя \"старт\"");
+                context.Wait(MessageReceivedAsync);
             }
             else
             {
-                context.Wait(Hop);
-                await context.PostAsync($"Введите Старт для продожения");
+                await context.PostAsync("Прощу прощения, я вас не понял! Введите \"Старт\", чтобы начать сначала!");
+                context.Wait(MessageReceivedAsync);
             }
         }
+
+        private async Task Poisk(IDialogContext context, IAwaitable<IMessageActivity> argument)//Поиск (ввод ингридиентов) и вывод списка - Парсинг
+        {//Здесь парсится ингридиенты и вывод списка.
+            var message = await argument;
+            res = Parser.ParseListReciepts(message.Text, message);
+            if (res[0, 1] == null)
+            {
+                await context.PostAsync("К сожалению, по вашему запросу ничего не найдено. Попробуйте ввести ингредиенты заново.");
+                context.Wait(Poisk);
+            }
+            else
+            {
+                this.Show(context);
+                context.Wait(Eating);// Передача номера рецепта
+            }
+        }
+
+        private void Show(IDialogContext context)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (res[0, i] == null)
+                    break;
+                context.PostAsync(res[0, i]);
+                Thread.Sleep(500);
+            }
+            context.PostAsync("Введите номер рецепта:");
+        }
+        private async Task Eating(IDialogContext context, IAwaitable<IMessageActivity> argument)//Вывод приготовления блюда - Парсинг. И вопрос нравится или нет блюдо
+        {
+            var message = await argument;
+            if (Regex.Match(message.Text, @"[\d]+").ToString() != "")
+            {
+                kek = Convert.ToInt32(message.Text) - 1;
+                await context.PostAsync(res[0, kek]);
+                string result = Parser.ParseIngredient(res[1, kek]);
+                string time = Parser.ParseTime(res[1, kek]);
+                await context.PostAsync(result);
+                await context.PostAsync(time);
+                HeroCard card = new HeroCard();
+                card.Buttons.Add(new CardAction()
+                {
+                    Type = "postBack",
+                    Title = "Да",
+                    Value = "Да"                     
+                });
+                Attachment attachment = card.ToAttachment();
+                Activity mes = MessagesController.act.CreateReply("") ;
+                mes.Attachments.Add(attachment);
+                mes.Text = "Желаете продолжить с этим рецептом?";
+                await context.PostAsync(mes);
+                context.Wait(Like);
+            }
+            else if(message.Text.ToLower() == "старт")
+            {
+                await context.PostAsync("Введите ингредиенты или название блюда.");
+                context.Wait(Poisk);
+            }
+            else
+            {
+                await context.PostAsync($"Ошибка! Такого числа нет в списке. Выберите один из рецептов. Введите число от 1 до 10:");
+                context.Wait(Eating);
+            }
+
+        }
+        //Здесь добавить вывод рецепта.
+        private async Task Like(IDialogContext context, IAwaitable<IMessageActivity> argument)//Обработка нравится или нет. Запрос выбора рецепта из того же списка.
+        {
+            reciepts = new List<string>();
+            var message = await argument;
+            if (message.Text.ToLower() == "да")
+            {
+                reciepts = Parser.ParseReciept(res[1, kek]);
+                await context.PostAsync(reciepts[j]);
+                HeroCard card = new HeroCard();
+                card.Buttons.Add(new CardAction()
+                {
+                    Type = "postBack",
+                    Title = "Дальше",
+                    Value = "Да"
+                });
+                Attachment attachment = card.ToAttachment();
+                Activity mes = MessagesController.act.CreateReply("");
+                mes.Attachments.Add(attachment);
+                await context.PostAsync(mes);
+                j++;
+                context.Wait(Further);
+            }
+            else if (message.Text.ToLower() == "нет")
+            {
+                this.Show(context);
+                context.Wait(Eating);
+            }
+            else if(message.Text.ToLower() == "старт")
+            {
+                await context.PostAsync("Введите ингредиенты или название блюда.");
+                context.Wait(Poisk);
+            }
+            else
+            {
+                await context.PostAsync($"Ошибка! Вам понравилось блюдо? Введите Да или Нет:");
+                context.Wait(Like);
+            }
+        }
+        private async Task Further(IDialogContext context, IAwaitable<IMessageActivity> argument)
+        {
+            var message = await argument;
+            if ((j < reciepts.Count - 1) && (message.Text.ToLower() == "да"))
+            {
+                j++;
+                await context.PostAsync(reciepts[j]);
+                HeroCard card = new HeroCard();
+                card.Buttons.Add(new CardAction()
+                {
+                    Type = "postBack",
+                    Title = "Дальше",
+                    Value = "Да"
+                });
+                Attachment attachment = card.ToAttachment();
+                Activity mes = MessagesController.act.CreateReply("");
+                mes.Attachments.Add(attachment);
+                await context.PostAsync(mes);
+                Thread.Sleep(100);
+                context.Wait(Further);
+            }
+            else if(message.Text.ToLower() == "нет")
+            {
+                await context.PostAsync(reciepts[j]);
+                await context.PostAsync("Вы закончили этот шаг?");
+                Thread.Sleep(100);
+                context.Wait(Further);
+            }
+            else if (j == reciepts.Count - 1)
+            {
+                HeroCard card = new HeroCard();
+                card.Buttons.Add(new CardAction()
+                {
+                    Type = "postBack",
+                    Title = "Начать сначала",
+                    Value = "Да"
+                });
+                Attachment attachment = card.ToAttachment();
+                Activity mes = MessagesController.act.CreateReply("");
+                mes.Text = "Ваше блюдо готово!Приятного аппетита. Жду вас снова! Для начала нажмите на кнопку.";
+                mes.Attachments.Add(attachment);
+                await context.PostAsync(mes);
+                context.Wait(MessageReceivedAsync);
+            }
+            else if (message.Text.ToLower() == "старт")
+            {
+                await context.PostAsync("Введите ингредиенты или название блюда.");
+                context.Wait(Poisk);
+            }
+        }
+        //private async Task Ask2(IDialogContext context, IAwaitable<IMessageActivity> argument)//Запрос на ввод ингридиентов, отправляется ввод в метод Poisk
+        //{
+        //    var message = await argument;
+        //    if (message.Text.ToLower() == "да")
+        //    {
+        //        await context.PostAsync($"Для поиска рецепта введите ингридиенты. Например: огурец, помидор...");
+        //        context.Wait(Poisk);
+        //    }
+        //    else if (message.Text.ToLower() == "нет")
+        //    {
+        //        await context.PostAsync("Спасибо за то, что воспользовались нашим ботом.");
+        //        await context.PostAsync("Для начала работы введите слово Старт:");
+        //        context.Wait(Start1);
+        //    }
+        //    else
+        //    {
+        //        await context.PostAsync($"Ошибка! Хотите выбрать другой рецепт? Введите: Да, Нет");
+        //        context.Wait(Ask2);
+        //    }
+        //}
     }
 }

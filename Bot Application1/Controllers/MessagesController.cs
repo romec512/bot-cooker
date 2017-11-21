@@ -14,11 +14,14 @@ namespace Bot_Application1
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
         /// </summary>
+        /// 
+        public static Activity act;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
             if (activity.Type == ActivityTypes.Message)
             {
-                await Conversation.SendAsync(activity, ()=> new Bot_Application1.Dialogs.RootDialog());
+                act = activity;
+                await Conversation.SendAsync(activity, () => new Bot_Application1.Dialogs.RootDialog());
             }
             else
             {

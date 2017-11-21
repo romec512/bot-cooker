@@ -60,12 +60,13 @@ namespace Bot_Application1
                 result[1, i] = link.Match(match.ToString()).ToString();
                 i++;
             }
-            return result;
+                return result;
         }
 
         public static List<string> ParseReciept(string site)//метод для парсинга странички с рецептом, site - ссылка на нужную страничку
         {
             Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
+            site = site.Replace("show", "print");
             string str = Parser.GetPage(site);
             str = str.Replace("&quot;", "\"");
             str = str.Replace("<br />", "");
@@ -106,7 +107,7 @@ namespace Bot_Application1
             string result = "";
             foreach(Match match in  reg.Matches(page))
             {
-                result += reg2.Match(reg1.Match(match.ToString()).ToString()).ToString() + '\n';
+                result += reg2.Match(reg1.Match(match.ToString()).ToString()).ToString();
             }
             return result;
         }
