@@ -12,7 +12,7 @@ using System.Web;
 namespace Bot_Application1
 {
     public class Parser
-    { 
+    {
         public static string GetPage(string site, IMessageActivity message)
         {
 

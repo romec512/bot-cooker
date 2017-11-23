@@ -25,6 +25,23 @@ namespace Bot_Application1.Dialogs
 
             return Task.CompletedTask;
         }
+        private Activity NewActivity(string _type, string _title, string _value, string _text)
+        {
+            CardAction action = new CardAction()
+            {
+                Type = _type,
+                Title = _title,
+                Value = _value
+            };
+            HeroCard card = new HeroCard();
+            card.Buttons.Add(action);
+            Activity activity = MessagesController.act.CreateReply("");
+            Attachment attachment = card.ToAttachment();
+            activity.Attachments.Add(attachment);
+            activity.Text = _text;
+            return activity;
+
+        }
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)//нажатие на кнопку start в telegram
         {
             var message = await argument;
@@ -40,7 +57,9 @@ namespace Bot_Application1.Dialogs
             }
             else if(message.Text.ToLower() == "/start")
             {
-                await context.PostAsync("Вас приветствует бот-кулинар! Введите \"старт\" для начала, а далее следуйте инструкциям! Вы всегда можете начать заново, введя \"старт\"");
+                //await context.PostAsync("Вас приветствует бот-кулинар! Введите \"старт\" для начала, а далее следуйте инструкциям! Вас приветствует бот-кулинар!");
+                Activity act = this.NewActivity("postBack", "Начать", "старт","Вас приветствует бот-кулинар!Нажмите \"старт\" для начала, а далее следуйте инструкциям! Вас приветствует бот-кулинар!");
+                await context.PostAsync(act);
                 context.Wait(MessageReceivedAsync);
             }
             else
@@ -61,33 +80,68 @@ namespace Bot_Application1.Dialogs
             }
             else
             {
-                this.Show(context);
+                //this.Show(context);
+                //context.PostAsync(this.NewActivity("postBack", res[0, 1], "0", "kiki"));
+                HeroCard card = new HeroCard();
+                for (int i = 0; i < 10; i++)
+                {
+                    if (res[0, i] == null)
+                        break;
+                    CardAction action = new CardAction()
+                    {
+                        Type = "postBack",
+                        Title = res[0, i],
+                        Value = "" + i
+                    };
+                    card.Buttons.Add(action);
+                }
+                Activity act = MessagesController.act.CreateReply("");
+                Attachment attacment = card.ToAttachment();
+                act.Attachments.Add(attacment);
+                //act.AttachmentLayout = "carousel";
+                act.Text = "Выберите рецепт";
+                await context.PostAsync(act);
                 context.Wait(Eating);// Передача номера рецепта
             }
         }
 
-        private void Show(IDialogContext context)
+        private async void Show(IDialogContext context)
         {
-            for (int i = 0; i < 10; i++)
+            HeroCard card = new HeroCard();
+            for(int i = 0; i < 1; i++)
             {
                 if (res[0, i] == null)
                     break;
-                context.PostAsync(res[0, i]);
-                Thread.Sleep(500);
+                CardAction action = new CardAction()
+                {
+                    Type = "postBack",
+                    Title = res[0, i],
+                    Value = i
+                };
+                card.Buttons.Add(action);
             }
-            context.PostAsync("Введите номер рецепта:");
+            Attachment attacment = card.ToAttachment();
+            Activity act = MessagesController.act.CreateReply("");
+            act.Attachments.Add(attacment);
+            //act.AttachmentLayout = "carousel";
+            act.Text = "Выберите рецепт";
+            await context.PostAsync(act);
         }
         private async Task Eating(IDialogContext context, IAwaitable<IMessageActivity> argument)//Вывод приготовления блюда - Парсинг. И вопрос нравится или нет блюдо
         {
             var message = await argument;
             if (Regex.Match(message.Text, @"[\d]+").ToString() != "")
             {
-                kek = Convert.ToInt32(message.Text) - 1;
+                kek = Convert.ToInt32(message.Text);
+                Thread.Sleep(300);
                 await context.PostAsync(res[0, kek]);
                 string result = Parser.ParseIngredient(res[1, kek]);
                 string time = Parser.ParseTime(res[1, kek]);
+                Thread.Sleep(300);
                 await context.PostAsync(result);
+                Thread.Sleep(300);
                 await context.PostAsync(time);
+                Thread.Sleep(300);
                 HeroCard card = new HeroCard();
                 card.Buttons.Add(new CardAction()
                 {
@@ -95,11 +149,19 @@ namespace Bot_Application1.Dialogs
                     Title = "Да",
                     Value = "Да"                     
                 });
+                card.Buttons.Add(new CardAction()
+                {
+                    Type = "postBack",
+                    Title = "Нет",
+                    Value = "Нет"
+                });
                 Attachment attachment = card.ToAttachment();
                 Activity mes = MessagesController.act.CreateReply("") ;
                 mes.Attachments.Add(attachment);
                 mes.Text = "Желаете продолжить с этим рецептом?";
+                Thread.Sleep(300);
                 await context.PostAsync(mes);
+                Thread.Sleep(300);
                 context.Wait(Like);
             }
             else if(message.Text.ToLower() == "старт")
@@ -122,19 +184,20 @@ namespace Bot_Application1.Dialogs
             if (message.Text.ToLower() == "да")
             {
                 reciepts = Parser.ParseReciept(res[1, kek]);
-                await context.PostAsync(reciepts[j]);
-                HeroCard card = new HeroCard();
-                card.Buttons.Add(new CardAction()
-                {
-                    Type = "postBack",
-                    Title = "Дальше",
-                    Value = "Да"
-                });
-                Attachment attachment = card.ToAttachment();
-                Activity mes = MessagesController.act.CreateReply("");
-                mes.Attachments.Add(attachment);
+                //HeroCard card = new HeroCard();
+                //card.Buttons.Add(new CardAction()
+                //{
+                //    Type = "postBack",
+                //    Title = "Дальше",
+                //    Value = "Да"
+                //});
+                //Attachment attachment = card.ToAttachment();
+                //Activity mes = MessagesController.act.CreateReply("");
+                //mes.Text = reciepts[j];
+                //mes.Attachments.Add(attachment);
+                Activity mes = this.NewActivity("postBack", "Далее", "да", reciepts[j]);
+                Thread.Sleep(300);
                 await context.PostAsync(mes);
-                j++;
                 context.Wait(Further);
             }
             else if (message.Text.ToLower() == "нет")
@@ -159,26 +222,31 @@ namespace Bot_Application1.Dialogs
             if ((j < reciepts.Count - 1) && (message.Text.ToLower() == "да"))
             {
                 j++;
-                await context.PostAsync(reciepts[j]);
-                HeroCard card = new HeroCard();
-                card.Buttons.Add(new CardAction()
-                {
-                    Type = "postBack",
-                    Title = "Дальше",
-                    Value = "Да"
-                });
-                Attachment attachment = card.ToAttachment();
-                Activity mes = MessagesController.act.CreateReply("");
-                mes.Attachments.Add(attachment);
+                //Thread.Sleep(300);
+                //await context.PostAsync(reciepts[j]);
+                //Thread.Sleep(300);
+                //HeroCard card = new HeroCard();
+                //card.Buttons.Add(new CardAction()
+                //{
+                //    Type = "postBack",
+                //    Title = "Дальше",
+                //    Value = "Да"
+                //});
+                //Attachment attachment = card.ToAttachment();
+                //Activity mes = MessagesController.act.CreateReply("");
+                //mes.Text = "";
+                //mes.Attachments.Add(attachment);
+                Activity mes = this.NewActivity("postBack", "Далее", "да", reciepts[j]);
+                Thread.Sleep(300);
                 await context.PostAsync(mes);
-                Thread.Sleep(100);
+                Thread.Sleep(300);
                 context.Wait(Further);
             }
             else if(message.Text.ToLower() == "нет")
             {
                 await context.PostAsync(reciepts[j]);
                 await context.PostAsync("Вы закончили этот шаг?");
-                Thread.Sleep(100);
+                Thread.Sleep(300);
                 context.Wait(Further);
             }
             else if (j == reciepts.Count - 1)
@@ -188,13 +256,15 @@ namespace Bot_Application1.Dialogs
                 {
                     Type = "postBack",
                     Title = "Начать сначала",
-                    Value = "Да"
+                    Value = "старт"
                 });
                 Attachment attachment = card.ToAttachment();
                 Activity mes = MessagesController.act.CreateReply("");
                 mes.Text = "Ваше блюдо готово!Приятного аппетита. Жду вас снова! Для начала нажмите на кнопку.";
                 mes.Attachments.Add(attachment);
+                Thread.Sleep(300);
                 await context.PostAsync(mes);
+                Thread.Sleep(300);
                 context.Wait(MessageReceivedAsync);
             }
             else if (message.Text.ToLower() == "старт")
