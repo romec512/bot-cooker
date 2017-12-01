@@ -21,7 +21,7 @@ namespace Bot_Application1
             if (activity.Type == ActivityTypes.Message)
             {
                 act = activity;
-                await Conversation.SendAsync(activity, () => new Bot_Application1.Dialogs.RootDialog());
+                await Conversation.SendAsync(activity, () => new Bot_Application1.Dialogs.RootDialog()/*.DefaultIfException()*/);
             }
             else
             {

@@ -12,7 +12,8 @@ using System.Web;
 namespace Bot_Application1
 {
     public class Parser
-    { 
+    {
+        private static string page = "";
         public static string GetPage(string site, IMessageActivity message)
         {
 
@@ -67,7 +68,7 @@ namespace Bot_Application1
         {
             Regex reciept = new Regex(@"<td valign=""top"" style=""padding: 0px 0px 0px 6px;"">[^\>\<]+</td>");
             site = site.Replace("show", "print");
-            string str = Parser.GetPage(site);
+            string str = page;
             str = str.Replace("&quot;", "\"");
             str = str.Replace("<br />", "");
             List<string> result = new List<string>();
@@ -87,7 +88,6 @@ namespace Bot_Application1
         public static string ParseTime(string site)//метод для парсинка времени приготовления
         {
             Regex time = new Regex(@"itemprop=""totalTime"">[^<]+</time>");
-            string page = Parser.GetPage(site);
             string result = Regex.Match(time.Match(page).ToString(), @">[^<]+<").ToString();
             result ="Время приготовления:" + Regex.Match(result, @"[^<>]+").ToString();
             return result;
@@ -99,7 +99,7 @@ namespace Bot_Application1
             Regex reg1 = new Regex(@">[^\>\<]+<");
             Regex reg2 = new Regex(@"[^\>\<]+");
             site = site.Replace("show", "print");
-            string page = GetPage(site);
+            page = GetPage(site);
             page = page.Replace("&quot;", "\"");
             page = page.Replace("&mdash;", "-");
             page = page.Replace("\t", "");
@@ -110,6 +110,19 @@ namespace Bot_Application1
                 result += reg2.Match(reg1.Match(match.ToString()).ToString()).ToString();
             }
             return result;
+        }
+
+        public static List<string> ParseImage()
+        {
+            List<string> images = new List<string>();
+            Regex reg = new Regex(@"src=""http://www.povarenok.ru/data/cache/[^\.]+.jpg""");
+            foreach (Match match in reg.Matches(page))
+            {
+                string image = Regex.Match(match.ToString(), "\"[^\"]+\"").ToString();
+                image = Regex.Match(image, @"http://www.povarenok.ru/data/cache/[^\.]+.jpg").ToString();
+                images.Add(image);
+            }
+            return images;
         }
     }
 }
